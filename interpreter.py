@@ -12,9 +12,8 @@ class FastbootShell(cmd.Cmd):
     intro = "Fastboot Mode."
     prompt = "fastboot>>> "
     def parseline(self, line):
-        return None, None, False if line == 'EOF' else line
+        return line, None, line
     def default(self, x):
-        print("line is "+x)
         if x:
             if x[0] == "=":
                 fdev.Download(x[1:], 0, info_cb, progress_cb)
@@ -31,7 +30,11 @@ class FastbootShell(cmd.Cmd):
                 return False
     def emptyline(self):
         # This seems to be called from onecmd but lets override anyway.
+        return True
+    def do_EOF(self, arg):
         print()
         return True
-
-FastbootShell().cmdloop()
+try:
+    FastbootShell().cmdloop()
+except KeyboardInterrupt:
+    print()
