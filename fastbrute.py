@@ -1,3 +1,5 @@
+#!/usr/bin/env python3.7
+
 from adb.fastboot import FastbootCommands, FastbootRemoteFailure, FastbootStateMismatch
 from adb.adb_commands import AdbCommands
 from adb.usb_exceptions import *
@@ -116,6 +118,10 @@ def main():
     for comm in comms:
         if re.fullmatch(b'upload_.*', comm) != None:
             continue
+        if re.fullmatch(b'erase:.*', comm) != None:
+            continue
+        if re.fullmatch(b'flash:.*', comm) != None:
+            continue
         try:
             normalize_command(comm)(fdev)
             last_cmd = comm
@@ -142,7 +148,7 @@ def main():
                 normalize_command(comm)(fdev)
                 last_cmd = comm
         except FastbootStateMismatch:
-            logging.error("State mismatch executing {comm}")
+            logging.error(f"State mismatch executing {comm}")
             traceback.print_exc()
 
 logging.basicConfig(level=logging.INFO)
