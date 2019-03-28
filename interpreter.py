@@ -34,7 +34,8 @@ class FastbootShell(cmd.Cmd):
     def do_EOF(self, arg):
         print()
         return True
-try:
-    FastbootShell().cmdloop()
-except KeyboardInterrupt:
-    print()
+if __name__ == "__main__":
+    try:
+        FastbootShell().cmdloop()
+    except KeyboardInterrupt:
+        print()

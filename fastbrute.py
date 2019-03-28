@@ -148,4 +148,6 @@ def main():
             traceback.print_exc()
 
 logging.basicConfig(level=logging.INFO)
-main()
+
+if __name__ == "__main__":
+    main()
