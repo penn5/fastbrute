@@ -116,11 +116,7 @@ def main():
     logging.debug(comms)
     last_cmd=None
     for comm in comms:
-        if re.fullmatch(b'upload_.*', comm) != None:
-            continue
         if re.fullmatch(b'erase:.*', comm) != None:
-            continue
-        if re.fullmatch(b'flash:.*', comm) != None:
             continue
         try:
             normalize_command(comm)(fdev)
