@@ -95,6 +95,10 @@ class RandomGenerator():
     def __init__(self, max):
         self.max = max
         self.total = 0
+    def __enter__(self):
+        pass
+    def __exit(self):
+        pass
     def read(number):
         self.total += number
         return gen_random_bytes(max(min(number, self.max - self.total + number), 0))
