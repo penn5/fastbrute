@@ -141,6 +141,7 @@ def main():
                 normalize_command(comm)(fdev)
                 last_cmd = comm
             else:
+                fdev.ConnectDevice()
                 normalize_command(comm)(fdev)
                 last_cmd = comm
         except FastbootStateMismatch:
