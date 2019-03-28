@@ -77,10 +77,9 @@ def run_cmd(cmd, arg, fdev):
 def flash_fuzz(partition, fdev):
     logging.debug(f"Flashing {partition.decode('utf-8')} with fuzzy")
     try:
-        pass ####################
-#        fdev.FlashFromFile(partition, RandomGenerator((2**20)*20), (2**20)*20, logging_cb(f"flash:{partition}")) # Flash 20mb
-#        fdev.FlashFromFile(partition, RandomGenerator((2**10)*10), (2**10)*10, logging_cb(f"flash:{partition}")) # Flash a few kibs
-#        fdev.FlashFromFile(partition, BytesIO(b''), 0, logging_cb(f"flash:{partition}")) # Flash nothing, fails on lots of devices
+        fdev.FlashFromFile(partition, RandomGenerator((2**20)*20), (2**20)*20, logging_cb(f"flash:{partition}")) # Flash 20mb
+        fdev.FlashFromFile(partition, RandomGenerator((2**10)*10), (2**10)*10, logging_cb(f"flash:{partition}")) # Flash a few kibs
+        fdev.FlashFromFile(partition, BytesIO(b''), 0, logging_cb(f"flash:{partition}")) # Flash nothing, fails on lots of devices
     except ReadFailedError as e:
         logging.error("The device is offline!")
         raise
