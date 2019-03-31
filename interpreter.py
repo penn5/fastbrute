@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.7
 
-from adb.fastboot import FastbootCommands, FastbootRemoteFailure, FastbootInvalidResponse
+from adb.fastboot import FastbootCommands, FastbootRemoteFailure, FastbootInvalidResponse, FastbootStateMismatch
 from adb.usb_exceptions import *
 import traceback, cmd
 fdev = FastbootCommands()
@@ -27,6 +27,9 @@ class FastbootShell(cmd.Cmd):
                 return False
             except FastbootInvalidResponse as e:
                 print(e.args[0])
+                return False
+            except FastbootStateMismatch as e:
+                print(e)
                 return False
     def emptyline(self):
         # This seems to be called from onecmd but lets override anyway.
