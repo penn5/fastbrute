@@ -97,7 +97,7 @@ class RandomGenerator():
         self.total = 0
     def __enter__(self):
         pass
-    def __exit(self):
+    def __exit__(self):
         pass
     def read(number):
         self.total += number
