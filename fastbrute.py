@@ -5,6 +5,8 @@ from adb.adb_commands import AdbCommands
 from adb.usb_exceptions import *
 import logging, re, functools, time, traceback
 
+is_likely_cmd_re = re.compile(b'[a-zA-Z_]{3,15}(:([a-zA-Z_]*))?')
+
 def get_commands(f):
     s = b""
     strs = []
@@ -42,8 +44,7 @@ def is_flash(s):
     return check_prefix(s, b"flash")
 
 def is_likely_cmd(s):
-    r = re.compile(b'[a-zA-Z_]{3,15}(:([a-zA-Z_]*))?')
-    return r.fullmatch(s) != None
+    return is_likely_command_re.fullmatch(s) != None
 
 def check_prefix(s, pre):
     # No format byte strings :(
