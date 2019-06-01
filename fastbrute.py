@@ -5,7 +5,9 @@ from adb.adb_commands import AdbCommands
 from adb.usb_exceptions import *
 import logging, re, functools, time, traceback
 
-is_likely_cmd_re = re.compile(b'[a-zA-Z_]{3,15}(:([a-zA-Z_]*))?')
+is_likely_cmd_re = re.compile(b'^[a-z]{3,15}(:([a-zA-Z_]*))?$')
+
+got_end = False
 
 def get_commands(f):
     s = b""
@@ -44,11 +46,11 @@ def is_flash(s):
     return check_prefix(s, b"flash")
 
 def is_likely_cmd(s):
-    return is_likely_command_re.fullmatch(s) != None
+    return is_likely_cmd_re.fullmatch(s) != None
 
 def check_prefix(s, pre):
     # No format byte strings :(
-    return re.match(pre+b"[: ].", s) != None
+    return re.match(b"^"+pre+b"[: ].", s) != None
 
 def normalize_command(s):
     r = re.compile(b"[: ]") # The fastboot protocol sends commands with a :, but the library always wants them with a space. This detects either one in the fastboot implementation that we are fuzzing and replaces it with the space expected by the library.
@@ -65,9 +67,17 @@ def normalize_command(s):
     else:
         return functools.partial(run_cmd, s, None)
 def run_cmd(cmd, arg, fdev):
+    if b"reboot" in cmd:
+        logging.info(f"Skipping command {cmd.decode('utf-8')} with args {arg.decode('utf-8') if arg else None} because it contains 'reboot'")
+        return
     logging.debug(f"Running command {cmd.decode('utf-8')} with args {arg.decode('utf-8') if arg else None}")
     try:
         fdev._SimpleCommand(cmd, arg=arg, info_cb=logging_cb(cmd+(b":"+arg if arg else b"")), timeout_ms=1000)
+        t = 0
+        got_end = False
+        while t < 10 and not got_end:
+            time.sleep(1)
+            t += 1
     except FastbootRemoteFailure as e:
         # Debug because we don't really care.
         logging.debug(f"Failed to run {cmd.decode('utf-8')} with args {arg.decode('utf-8') if arg else None} due to {e}")
@@ -79,8 +89,22 @@ def flash_fuzz(partition, fdev):
     logging.debug(f"Flashing {partition.decode('utf-8')} with fuzzy")
     try:
         fdev.FlashFromFile(partition, RandomGenerator((2**20)*20), (2**20)*20, logging_cb(f"flash:{partition}")) # Flash 20mb
+        got_end = False
+        while t < 10 and not got_end:
+            time.sleep(1)
+            t += 1
         fdev.FlashFromFile(partition, RandomGenerator((2**10)*10), (2**10)*10, logging_cb(f"flash:{partition}")) # Flash a few kibs
+        t = 0
+        got_end = False
+        while t < 10 and not got_end:
+            time.sleep(1)
+            t += 1
         fdev.FlashFromFile(partition, BytesIO(b''), 0, logging_cb(f"flash:{partition}")) # Flash nothing, fails on lots of devices
+        t = 0
+        got_end = False
+        while t < 10 and not got_end:
+            time.sleep(1)
+            t += 1
     except ReadFailedError as e:
         logging.error("The device is offline!")
         raise
@@ -98,9 +122,9 @@ class RandomGenerator():
         self.total = 0
     def __enter__(self):
         pass
-    def __exit__(self):
+    def __exit__(self, _1, _2, _3):
         pass
-    def read(number):
+    def read(self, number):
         self.total += number
         return gen_random_bytes(max(min(number, self.max - self.total + number), 0))
 
@@ -108,6 +132,10 @@ def logging_cb(cmd_running):
     return functools.partial(log_cmd, cmd_running)
 
 def log_cmd(cmd_running, msg):
+    if msg.header == b"FAIL":
+#        time.sleep(10)
+        got_end=True
+    logging.debug(msg.header.decode("utf-8"))
     if msg.message != b'invalid command\x00':
         logging.info(f"Output from {cmd_running.decode('utf-8')} is {msg.header.decode('utf-8')}: {msg.message.decode('utf-8')}")
 
