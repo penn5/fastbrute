@@ -18,8 +18,20 @@ class FastbootShell(cmd.Cmd):
             if x[0] == "=":
                 fdev.Download(x[1:], 0, info_cb, progress_cb)
                 return False
+            if x[0] == "-":
+                dat = b""
+                while True:
+                    try:
+                        dat += bytes(fdev.usb_handle.BulkRead(1024, timeout_ms=1000))
+                    except:
+                        break
+                print(dat)
+                return False
             try:
-                fdev._SimpleCommand(x.split(":", 1)[0].encode("utf-8"), x.split(":", 1)[1].encode("utf-8") if len(x.split(":", 1)) > 1 else None, timeout_ms=1000, info_cb=info_cb)
+                if x[0] == "+":
+                    fdev._protocol.SendCommand(x[1:].split(":", 1)[0].encode("utf-8"), (x[1:].split(":", 1)[1].encode("utf-8") if len(x[1:].split(":", 1)) > 1 else None))
+                else:
+                    fdev._SimpleCommand(x.split(":", 1)[0].encode("utf-8"), x.split(":", 1)[1].encode("utf-8") if len(x.split(":", 1)) > 1 else None, timeout_ms=1000, info_cb=info_cb)
             except WriteFailedError:
                 traceback.print_exc()
                 return True
