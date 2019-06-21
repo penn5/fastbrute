@@ -16,7 +16,7 @@ class FastbootShell(cmd.Cmd):
     def default(self, x):
         if x:
             if x[0] == "=":
-                fdev.Download(x[1:], 0, info_cb, progress_cb)
+                fdev.Download(open(x[1:], "rb"), os.stat(x[1:]).st_size, info_cb, progress_cb)
                 return False
             if x[0] == "-":
                 dat = b""
