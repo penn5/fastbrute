@@ -2,7 +2,7 @@
 
 from adb.fastboot import FastbootCommands, FastbootRemoteFailure, FastbootInvalidResponse, FastbootStateMismatch
 from adb.usb_exceptions import *
-import traceback, cmd
+import traceback, cmd, os
 fdev = FastbootCommands()
 fdev.ConnectDevice()
 info_cb = lambda x: print(x.header+b": "+x.message)
